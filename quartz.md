@@ -1,89 +1,66 @@
 定时任务组件Quartz
 
+官网
+
 ```http
 http://www.quartz-scheduler.org/
 ```
 
+依赖
+
 ```xml
+<!-- SpringBoot 整合 Quartz 定时任务 -->
 <dependency>
-  <groupId>org.quartz-scheduler</groupId>
-  <artifactId>quartz</artifactId>
-  <version>2.2.1</version>
-</dependency>
-<dependency>
-  <groupId>org.quartz-scheduler</groupId>
-  <artifactId>quartz-jobs</artifactId>
-  <version>2.2.1</version>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-quartz</artifactId>
+    <version>2.3.5.RELEASE</version>
 </dependency>
 ```
 
 
-
-
-
-spring-jobs.xml
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
-       xmlns:mvc="http://www.springframework.org/schema/mvc"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-						http://www.springframework.org/schema/beans/spring-beans.xsd
-						http://www.springframework.org/schema/mvc
-						http://www.springframework.org/schema/mvc/spring-mvc.xsd
-						http://code.alibabatech.com/schema/dubbo
-						http://code.alibabatech.com/schema/dubbo/dubbo.xsd
-						http://www.springframework.org/schema/context
-						http://www.springframework.org/schema/context/spring-context.xsd">
-	<!-- 注册自定义Job -->
-    <bean id="jobDemo" class="com.itheima.jobs.JobDemo"></bean>
-	<!-- 注册JobDetail,作用是负责通过反射调用指定的Job -->
-    <bean id="jobDetail" 
-          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <!-- 注入目标对象 -->
-        <property name="targetObject" ref="jobDemo"/>
-        <!-- 注入目标方法 -->
-        <property name="targetMethod" value="run"/>
-    </bean>
-    <!-- 注册一个触发器，指定任务触发的时间 -->
-    <bean id="myTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <!-- 注入JobDetail -->
-        <property name="jobDetail" ref="jobDetail"/>
-        <!-- 指定触发的时间，基于Cron表达式 -->
-        <property name="cronExpression">
-            <value>0/10 * * * * ?</value>
-        </property>
-    </bean>
-    <!-- 注册一个统一的调度工厂，通过这个调度工厂调度任务 -->
-    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <!-- 注入多个触发器 -->
-        <property name="triggers">
-            <list>
-                <ref bean="myTrigger"/>
-            </list>
-        </property>
-    </bean>
-</beans>
-```
-
-
-
-job
 
 ```java
-package com.itheima.jobs;
+package com.pjb.job;
+ 
+import org.quartz.JobExecutionContext;
+import org.springframework.scheduling.quartz.QuartzJobBean;
+ 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+ 
 /**
- * 自定义Job
- */
-public class JobDemo {
-    public void run(){
-        System.out.println("job execute...");
+ * 同步用户信息Job
+ * @author pan_junbiao
+ **/
+public class SyncUserJob extends QuartzJobBean
+{
+    @Override
+    protected void executeInternal(JobExecutionContext jobExecutionContext)
+    {
+        //获取JobDetail中传递的参数
+        String userName = (String) jobExecutionContext.getJobDetail().getJobDataMap().get("userName");
+        String blogUrl = (String) jobExecutionContext.getJobDetail().getJobDataMap().get("blogUrl");
+        String blogRemark = (String) jobExecutionContext.getJobDetail().getJobDataMap().get("blogRemark");
+ 
+        //获取当前时间
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+ 
+        //打印信息
+        System.out.println("用户名称：" + userName);
+        System.out.println("博客地址：" + blogUrl);
+        System.out.println("博客信息：" + blogRemark);
+        System.out.println("当前时间：" + dateFormat.format(date));
+        System.out.println("----------------------------------------");
     }
 }
 ```
+
+
+
+
+
+
 
 
 
